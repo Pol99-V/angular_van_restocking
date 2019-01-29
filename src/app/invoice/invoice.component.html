@@ -1,0 +1,57 @@
+<div class="invoice" *ngFor="let invoice of invoiceIds; let i = index">
+    <h5>Num. {{ invoice }}</h5>
+<div *ngFor="let item of printData" >
+  <table style="border:0;">
+    <tbody style="border:0;">
+    <tr>
+      <td>Order Id:</td>
+      <td>{{item['id']}}</td>
+      <td>Order Date:</td>
+      <td>{{item['order_date']}}</td>
+    </tr>
+    <tr>
+      <td>Tech Name:</td>
+      <td><h3>{{item['name']}}</h3></td>
+      <td>Depot:</td>
+      <td><h3>{{item['depot_id']}}</h3></td>
+    </tr>
+    </tbody>
+  </table>
+<br>
+<br>
+<br>
+  <table>
+    <thead>
+      <th>Item_ID</th>
+      <th>Description</th>
+      <th>Ordered</th>
+      <th>Packed</th>
+    </thead>
+    <tbody>
+      <tr *ngFor="let it of item['sub_items']" >
+        <td>{{it['item_id']}}</td>
+        <td>{{it['item_desc']}}</td>
+        <td>1</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+  <br>
+  <br>
+</div>
+
+<div style=" position: fixed; bottom: 0; ">
+  <table style="border:0;">
+    <tbody style="border:0;">
+    <tr>
+      <td style="width:25%">Packed by</td>
+      <td style="width:25%"></td>
+      <td style="width:25%">Packed Date</td>
+      <td style="width:25%">{{dateToString()}}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>

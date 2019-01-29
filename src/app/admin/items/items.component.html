@@ -1,0 +1,180 @@
+<div class="card mt-5">
+    <div class="card-header h2">Items</div>
+    <div class="card-body">
+      <div class="clearfix">
+        <button class="btn btn-primary float-left" (click)="openAdd()" >Add</button>
+        <input type="text" name="search" id="search" class="float-right" [(ngModel)] = "searchString" (keyup)="filter()" >
+        <button *ngIf="active == 0" (click)="activeFilter()" class="btn btn-warning float-right mr-3">N</button>
+        <button *ngIf="active == 1" (click)="activeFilter()" class="btn btn-primary float-right mr-3">Y</button>
+        <button *ngIf="active == 2" (click)="activeFilter()" class="btn btn-success float-right mr-3">A</button>
+      </div>
+      <table datatable [dtOptions]="dtOptions" class="row-border hover">
+        <thead class="table_header">
+          <tr>
+            <th class="">Item_ID</th>          
+            <th class="">Description</th>          
+            <th class="text-right">Cost</th>          
+            <th class="text-center">Active?</th>          
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of Item_list; index as i">
+              <td class="">{{ row['item_id'] }}</td>
+              <td class="">{{ row['description'] }}</td>
+              <td class="text-right">£&nbsp;{{ row['cost'] | number : '1.2-2' }}</td>
+              <td class="text-center">
+                <button *ngIf="row['active']" class="btn btn-primary mb-0" disabled>Y</button>
+                <button *ngIf="!row['active']" class="btn btn-warning mb-0" disabled>N</button>
+                <!-- {{ row['active'] }}                -->
+              </td>
+              <td class="text-center">
+                <button class="btn btn-info mr-1 mb-0" (click)="edit(i)" >Edit</button>
+                <button class="btn btn-danger mb-0" (click)="delete(i)" >Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="Item_list?.length == 0">
+              <td colspan="3" class="no-data-available">No data!</td>
+            </tr> 
+        </tbody>
+      </table>
+    </div> 
+    
+  </div>
+  
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Add Item</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <label for="name">Item_ID:</label>
+          <input type="text" (keyup)="checkId(add_name['item_id'])" [(ngModel)]="add_name['item_id']" #addId="ngModel" required>
+          <div *ngIf="addId.invalid && (addId.dirty || addId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="addId.invalid">
+                  Item_ID is required.
+              </div>
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+
+      </div>
+      <div class="form-group">
+          <label for="name">Description:</label>
+          <input type="text" [(ngModel)]="add_name['description']" required #addName="ngModel">
+          <div *ngIf="addName.invalid && (addName.dirty || addName.touched)"
+            class="alert alert-danger">
+            <div *ngIf="addName.invalid">
+              Item Description is required.
+            </div>            
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Cost:&nbsp;£</label>
+          <input type="number" step="0.01" required #addCost="ngModel"
+                (change)="setTwoNumberDecimal($event)"
+                (ngModelChange)="add_name['cost']=$event"
+                [ngModelOptions]="{updateOn: 'blur'}"
+                [ngModel]="add_name['cost'] | number:'1.2-2'" >
+          
+          <div *ngIf="addCost.invalid && (addCost.dirty || addCost.touched)"
+              class="alert alert-danger">
+              <div *ngIf="addCost.invalid">
+                Item Cost is required.
+              </div>            
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Active:</label>
+          <button *ngIf="add_name['active'] == false" (click)="add_name['active'] = !add_name['active']" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="add_name['active'] == true" (click)="add_name['active'] = !add_name['active']" class="btn btn-primary mb-0 ml-3">Y</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="add()" [disabled]="addName.invalid || addCost.invalid || addId.invalid || id_exits">Add</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  
+  <ng-template #content_edit let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Item</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <label for="name">Item_ID:</label>
+          <input type="text" (keyup)="edit_checkId(edit_name['item_id'])" [(ngModel)]="edit_name['item_id']" #editId="ngModel" required>
+          <div *ngIf="editId.invalid && (editId.dirty || editId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="editId.invalid">
+                  Item_ID is required.
+              </div>                        
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Description:</label>
+          <input type="text" [(ngModel)]="edit_name['description']" #editDesc="ngModel" required>
+          <div *ngIf="editDesc.invalid && (editDesc.dirty || editDesc.touched)"
+            class="alert alert-danger">
+            <div *ngIf="editDesc.invalid">
+              Item Description is required.
+            </div>            
+        </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Cost:&nbsp;£</label>
+          <input type="number" step="0.01" #editCost="ngModel" required
+                (change)="setTwoNumberDecimal($event)"
+                (ngModelChange)="edit_name['cost']=$event"
+                [ngModelOptions]="{updateOn: 'blur'}"
+                [ngModel]="edit_name['cost'] | number:'1.2-2'" >
+
+          <div *ngIf="editCost.invalid && (editCost.dirty || editCost.touched)"
+                class="alert alert-danger">
+                <div *ngIf="editCost.invalid">
+                  Item Cost is required.
+                </div>            
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Active:</label>
+          <button *ngIf="edit_active == false" (click)="edit_active = !edit_active" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="edit_active == true" (click)="edit_active = !edit_active" class="btn btn-primary mb-0 ml-3">Y</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="editDesc.invalid || editCost.invalid || editId.invalid || id_exits">Save</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+   
+  <ng-template #content_delete let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Delete Item</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <h5>Are you sure?</h5>
+          <h3>Delete - {{delete_name['item_id']}}</h3>
+      </div> 
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="deleteProcess()">Delete</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  

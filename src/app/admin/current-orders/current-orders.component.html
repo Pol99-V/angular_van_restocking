@@ -1,0 +1,130 @@
+<div class="card mt-5">
+  <div class="card-header h2">Current Orders</div>
+  <div class="card-body">
+    <div class="clearfix">
+      <!-- <button class="btn btn-primary float-left" (click)="openAdd()" >Add</button> -->
+      <input type="text" name="search" id="search" class="float-right" [(ngModel)] = "searchString" (keyup)="filter()" >      
+    </div>
+    <table datatable [dtOptions]="dtOptions" class="row-border hover">
+      <thead class="table_header">
+        <tr>
+          <th class="text-center">Order_ID</th>          
+          <th class="text-center">Tech Name</th>          
+          <th class="text-center">Order Date</th>          
+          <th class="text-center">Depot</th>          
+          <th class="text-center">Service</th>          
+          <th class="text-center">Parts</th>          
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let row of order_list; index as i" [ngClass]="{ 'bg-danger': !row['order_date'] }" >
+            <td class="text-center">{{ row['order_id'] }}</td>
+            <td class="text-center">{{ row['tech_id'] }}</td>
+            <td class="text-center">{{ row['order_date'] }}</td>
+            <td class="text-center">{{ row['depot_id'] }}</td>
+            <td class="text-center">{{ row['service_id'] }}</td>
+            <td class="text-center">{{ row['item_count'] }}</td>
+            <td class="text-center">
+              <button class="btn btn-info mr-1 mb-0" (click)="edit(i)" >Edit</button>
+            </td>
+          </tr>
+          <tr *ngIf="order_list?.length == 0">
+            <td colspan="3" class="no-data-available">No data!</td>
+          </tr> 
+      </tbody>
+    </table>
+    <div class="dataTables_info" id="DataTables_Table_0_info" style="margin-top: -25px;">Showing {{order_list.length}} entries</div>
+    <div class="form-group clearfix mt-1">
+      <button type="button" class="btn btn-success float-right mt-3" (click)="open_clear_modal(content_print)"  >Print Packing Lists</button>
+    </div>
+  </div> 
+  
+</div>
+
+
+<ng-template #content_edit let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Edit Order</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+        <label for="name">Order_ID:</label>
+        <input type="text" [(ngModel)]="edit_name['order_id']" readonly>
+    </div>
+    <div class="form-group">
+        <label for="name">Tech name:</label>
+        <select class="form-control pr-4" (change)="editTechChange(edit_name['tech_id'])" [(ngModel)]="edit_name['tech_id']"> 
+          <option *ngFor="let te of tech_list" [value]="te['tech_id']" >{{te['tech_id']}}</option>
+        </select>
+    </div>
+    <div class="form-group">
+      <label for="name">Order Date:</label>
+      <input type="text" [(ngModel)]="edit_name['order_date']" readonly>
+    </div>
+    <div class="form-group">
+        <label for="name">Depot:</label>
+        <input type="text" [(ngModel)]="edit_name['depot_id']" readonly>
+    </div>
+    <div class="form-group">
+        <label for="name">Service:</label>
+        <input type="text" [(ngModel)]="edit_name['service_id']" readonly>
+    </div>
+      <div class="form-group clearfix">
+          <button class="btn btn-primary float-right mb-0" (click)="open_sub_edit()" >Add_Item</button>
+      </div>
+    
+    <table class="row-border hover">
+      <thead class="table_header">
+        <tr>
+          <th style="width: 30%">Item_ID</th>
+          <th style="width: 30%">Description</th>
+          <th style="width: 20%">Qty</th>
+          <th style="width: 20%">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let item of this.edit_name.sub_items; index as idx;" >
+              <td>
+                <input *ngIf="editing_no != idx"  type="text" class="mb-0" [value]="item['item_id']" readonly>
+                <select *ngIf="editing_no == idx" [(ngModel)]="item['item_id']" (change)="select_item_edit(item['item_id'])">
+                  <option *ngFor="let _item of item_list_sub" [value]="_item['item_id']">{{_item['item_id']}}</option>
+                </select>
+              </td>
+              <td><input type="text" class="mb-0" [value]="item['item_desc']" readonly></td>
+              <td><input type="number" (input)="edit_qty_change()" [(ngModel)]="item['qty']" class="mb-0"></td>
+              <td><button type="button" class="btn btn-danger mb-0" (click)="remove_item_edit(idx)" >Delete</button></td>
+            </tr>
+      </tbody>
+    </table>
+    <div class="form-group clearfix">
+      <h5 class="float-right mr-5">Count: {{edit_name['item_count']}}</h5>
+    </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="save()">Save</button>
+      <button type="button" class="btn btn-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+</ng-template>
+ 
+  
+<ng-template #content_print let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Print Packing Lists</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <h3>Clear Current Orders?</h3>
+      </div> 
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="clear_orders()">Clear</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>

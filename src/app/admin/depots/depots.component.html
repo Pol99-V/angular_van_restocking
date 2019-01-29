@@ -1,0 +1,107 @@
+<div class="card mt-5">
+  <div class="card-header h2">Depots</div>
+  <div class="card-body">
+    <div class="clearfix">
+      <button class="btn btn-primary float-left" (click)="openAdd()" >Add</button>
+      <input type="text" name="search" id="search" class="float-right" [(ngModel)] = "searchString" (keyup)="filter()" >
+    </div>
+    <table datatable [dtOptions]="dtOptions" class="row-border hover">
+      <thead class="table_header">
+        <tr>
+          <th class="">
+              Depot_ID
+          </th>          
+          <th class="">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let row of depot_list; index as i">
+            <td class="">{{ row['description'] }}</td>
+            <td class="">
+              <button class="btn btn-info mr-1 mb-0" (click)="edit(i)" >Edit</button>
+              <button class="btn btn-danger mb-0" (click)="delete(i)" >Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="depot_list?.length == 0">
+            <td colspan="3" class="no-data-available">No data!</td>
+          </tr> 
+      </tbody>
+    </table>
+  </div> 
+  
+</div>
+
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Add Depot</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+        <label for="name">Depot_ID:</label>
+        <input type="text" (keyup)="checkId(add_name)" [(ngModel)]="add_name" #addName="ngModel" required>
+        <div *ngIf="addName.invalid && (addName.dirty || addName.touched)"
+            class="alert alert-danger">
+            <div *ngIf="addName.invalid">
+                Depot_ID is required.
+            </div>            
+        </div>
+        <div *ngIf="id_exits" class="alert alert-danger" >
+            This ID already exists.
+        </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="add()" [disabled]="addName.invalid || id_exits">Add</button>
+      <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+  </div>
+</ng-template>
+
+<ng-template #content_edit let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Edit Depot</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+        <label for="name">Depot_ID:</label>
+        <input type="text" (keyup)="edit_checkId(edit_name)" [(ngModel)]="edit_name" #editName="ngModel" required>
+        <div *ngIf="editName.invalid && (editName.dirty || editName.touched)"
+            class="alert alert-danger">
+            <div *ngIf="editName.invalid">
+              Depot_ID is required.
+            </div>            
+        </div>
+        <div *ngIf="id_exits" class="alert alert-danger" >
+            This ID already exists.
+        </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="editName.invalid || id_exits">Save</button>
+      <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+  </div>
+</ng-template>
+ 
+<ng-template #content_delete let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Delete Depot</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group">
+        <h5>Are you sure?</h5>
+        <h3>Delete - {{delete_name}}</h3> 
+    </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="deleteProcess()">Delete</button>
+      <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+  </div>
+</ng-template>

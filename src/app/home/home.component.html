@@ -1,0 +1,62 @@
+
+<nav class="navbar navbar-expand-md navbar-light bg-white">
+  <a class="navbar-brand" routerLink=""><img src="assets/logo.png" alt="logo" height="25" width="80" class="d-inline-block align-top"></a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Orders
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" routerLink="current-order">Current Orders</a>
+          <a class="dropdown-item" routerLink="order-history">Order History</a>
+        </div>
+      </li>
+      <!-- <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Reports
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" routerLink="total-stock">Total Stock Sent</a>
+          <a class="dropdown-item" routerLink="van-stock">Stock Sent by Van</a>
+        </div>
+      </li> -->
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Setup
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" routerLink="tech">Techs</a>
+          <a class="dropdown-item" routerLink="van">Vans</a>
+          <a class="dropdown-item" routerLink="depot">Depots</a>
+          <a class="dropdown-item" routerLink="item">Items</a>
+          <a class="dropdown-item" routerLink="kit">Kits</a>
+          <a class="dropdown-item" routerLink="service">Services</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown" *ngIf="role == 'admin'" >
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          User Management
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" routerLink="user">Users</a>
+        </div>
+      </li>
+    </ul>
+    <form class="form-inline my-2 my-lg-0">
+      <a class="btn btn-outline-primary" (click)="logout()">Logout</a>
+    </form>
+  </div>
+</nav>
+
+
+<div class="container">
+
+  <router-outlet></router-outlet>
+    
+</div>
+

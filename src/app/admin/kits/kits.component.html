@@ -1,0 +1,262 @@
+<div class="card mt-5">
+    <div class="card-header h2">Kits</div>
+    <div class="card-body">
+      <div class="clearfix">
+        <button class="btn btn-primary float-left" (click)="openAdd()" >Add</button>
+        <input type="text" name="search" id="search" class="float-right" [(ngModel)] = "searchString" (keyup)="filter()" >
+        <button *ngIf="active == 0" (click)="activeFilter()" class="btn btn-warning float-right mr-3">N</button>
+        <button *ngIf="active == 1" (click)="activeFilter()" class="btn btn-primary float-right mr-3">Y</button>
+        <button *ngIf="active == 2" (click)="activeFilter()" class="btn btn-success float-right mr-3">A</button>
+      </div>
+      <table datatable [dtOptions]="dtOptions" class="row-border hover">
+        <thead class="table_header">
+          <tr>
+            <th class="">Kit_ID</th>          
+            <th class="">Kit_Name</th>          
+            <th class="">Service</th>          
+            <th class="text-center">Active?</th>          
+            <th class="">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of Kit_list; index as i">
+              <td class="">{{ row['kit_id'] }}</td>
+              <td class="">{{ row['name'] }}</td>
+              <td class="">{{ row['service_id'] }}</td>
+              <td class="text-center">
+                <button *ngIf="row['active']" class="btn btn-primary mb-0" disabled>Y</button>
+                <button *ngIf="!row['active']" class="btn btn-warning mb-0" disabled>N</button>
+                <!-- {{ row['active'] }}                -->
+              </td>
+              <td class="">
+                <button class="btn btn-info mr-1 mb-0" (click)="edit(i)" >Edit</button>
+                <button class="btn btn-danger mb-0" (click)="delete(i)" >Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="Kit_list?.length == 0">
+              <td colspan="3" class="no-data-available">No data!</td>
+            </tr> 
+        </tbody>
+      </table>
+    </div> 
+    
+  </div>
+  
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Add Kit</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <label for="name">Kit_ID:</label>
+          <input type="text" (keyup)="checkId(add_name['kit_id'])" [(ngModel)]="add_name['kit_id']" #addId="ngModel" required>
+          <div *ngIf="addId.invalid && (addId.dirty || addId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="addId.invalid">
+                  Kit_ID is required.
+              </div>
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Kit_Name:</label>
+          <input type="text" [(ngModel)]="add_name['name']" #addName="ngModel" required>
+          <div *ngIf="addName.invalid && (addName.dirty || addName.touched)"
+            class="alert alert-danger">
+            <div *ngIf="addName.invalid">
+              Kit_Name is required.
+            </div>            
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Service</label>
+          <select class="form-control pr-4" [(ngModel)] = "add_name['service_id']" #addService="ngModel" name="" id="" required>
+            <option *ngFor="let service of service_list"  [value]="service['name']">{{service['name']}}</option>
+          </select>          
+          <div *ngIf="addService.invalid && (addService.dirty || addService.touched)"
+            class="alert alert-danger mt-3">
+            <div *ngIf="addService.invalid">
+              Service is required.
+            </div>            
+          </div>
+      </div>
+      <div class="form-group clearfix">
+          <label for="name">Active:</label>
+          <button *ngIf="add_name['active'] == false" (click)="add_name['active'] = !add_name['active']" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="add_name['active'] == true" (click)="add_name['active'] = !add_name['active']" class="btn btn-primary mb-0 ml-3">Y</button>
+          <button class="btn btn-primary float-right mb-0" (click)="open_sub_add()" >Add_Item</button>
+      </div>
+
+      <table class="row-border hover">
+        <thead class="table_header">
+          <tr>
+            <th style="width: 30%">Item_ID</th>
+            <th style="width: 30%">Description</th>
+            <th style="width: 20%">Qty</th>
+            <th style="width: 20%">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of this.add_name.sub_item; index as idx;" >
+            <td>
+              <input *ngIf="editing_no != idx"  type="text" class="mb-0" [value]="item['item_id']" readonly>
+              <select *ngIf="editing_no == idx" [(ngModel)]="item['item_id']" (change)="select_item_add(item['item_id'])" >
+                <option *ngFor="let _item of item_list_sub" [value]="_item['item_id']">{{_item['item_id']}}</option>
+              </select>
+            </td>
+            <td><input type="text" class="mb-0" [value]="item['item_desc']" readonly></td>
+            <td><input type="number" name="" id="" [(ngModel)]="item['qty']" class="mb-0"></td>
+            <td><button type="button" class="btn btn-danger mb-0" (click)="remove_item_add(idx)" >Delete</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="add()" [disabled]="addName.invalid || addService.invalid || addId.invalid || id_exits">Add</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  
+  <ng-template #content_edit let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Kit</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <label for="name">Kit_ID:</label>
+          <input type="text" (keyup)="edit_checkId(edit_name['kit_id'])" [(ngModel)]="edit_name['kit_id']" #editId="ngModel" required>
+          <div *ngIf="editId.invalid && (editId.dirty || editId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="editId.invalid">
+                  Kit_ID is required.
+              </div>                        
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Kit_name:</label>
+          <input type="text" [(ngModel)]="edit_name['name']" #editName="ngModel" required>
+          <div *ngIf="editName.invalid && (editName.dirty || editName.touched)"
+            class="alert alert-danger">
+            <div *ngIf="editName.invalid">
+              Kit_Name is required.
+            </div>            
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Service</label>
+          <select class="form-control pr-4" [(ngModel)] = "edit_name['service_id']" #editService="ngModel" name="" id="" required>
+            <option *ngFor="let service of service_list"  [value]="service['name']">{{service['name']}}</option>
+          </select>
+          <div *ngIf="editService.invalid && (editService.dirty || editService.touched)"
+            class="alert alert-danger mt-3">
+            <div *ngIf="editService.invalid">
+              Service is required.
+            </div>            
+          </div>
+          <!-- <input type="number" [(ngModel)]="edit_name['cost']"> -->
+      </div>
+      <div class="form-group clearfix">
+          <label for="name">Active:</label>
+          <button *ngIf="edit_active == false" (click)="edit_active = !edit_active" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="edit_active == true" (click)="edit_active = !edit_active" class="btn btn-primary mb-0 ml-3">Y</button>
+          <button class="btn btn-primary float-right mb-0" (click)="open_sub_edit()" >Add_Item</button>
+      </div>
+
+      <table class="row-border hover">
+          <thead class="table_header">
+            <tr>
+              <th style="width: 30%">Item_ID</th>
+              <th style="width: 30%">Description</th>
+              <th style="width: 20%">Qty</th>
+              <th style="width: 20%">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of this.edit_name.sub_item; index as idx;" >
+              <td>
+                <input *ngIf="editing_no != idx"  type="text" class="mb-0" [value]="item['item_id']" readonly>
+                <select *ngIf="editing_no == idx" [(ngModel)]="item['item_id']" (change)="select_item_edit(item['item_id'])">
+                  <option *ngFor="let _item of item_list_sub" [value]="_item['item_id']">{{_item['item_id']}}</option>
+                </select>
+              </td>
+              <td><input type="text" class="mb-0" [value]="item['item_desc']" readonly></td>
+              <td><input type="number" name="" id="" [(ngModel)]="item['qty']" class="mb-0"></td>
+              <td><button type="button" class="btn btn-danger mb-0" (click)="remove_item_edit(idx)" >Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+  
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="editName.invalid || editService.invalid || id_exits || editId.invalid">Save</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+   
+  <ng-template #content_delete let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Delete Kit</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <h5>Are you sure?</h5>
+          <h5>Delete - </h5>
+          <table>
+            <tr>
+              <td>Kit ID: </td>
+              <td>{{delete_name['kit_id']}}  </td>
+            </tr>
+            <tr>
+              <td>Kit Name:</td>
+              <td>{{delete_name['name']}}</td>
+            </tr>
+          </table>           
+             
+      </div> 
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="deleteProcess()">Delete</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  
+  <!-- <ng-template #sub_add let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Add Item</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="">Item_ID</label>
+        <select class="form-control pr-4">
+          <option *ngFor="let item of item_list"  value="item['item_id']" formControlName="control">{{item['item_id']}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="">Description</label>
+        <input type="text" name="" id="" readonly>
+      </div> 
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="sub_insert()" [(ngModel)]="binding" >Add Item</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+     -->

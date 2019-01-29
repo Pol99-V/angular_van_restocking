@@ -1,0 +1,249 @@
+<div class="card mt-5">
+    <div class="card-header h2">Vans</div>
+    <div class="card-body">
+      <div class="clearfix">
+        <button class="btn btn-primary float-left" (click)="openAdd()" >Add</button>
+        <input type="text" name="search" id="search" class="float-right" [(ngModel)] = "searchString" (keyup)="filter()" >
+        <button *ngIf="active == 0" (click)="activeFilter()" class="btn btn-warning float-right mr-3">N</button>
+        <button *ngIf="active == 1" (click)="activeFilter()" class="btn btn-primary float-right mr-3">Y</button>
+        <button *ngIf="active == 2" (click)="activeFilter()" class="btn btn-success float-right mr-3">A</button>
+      </div>
+      <table datatable [dtOptions]="dtOptions" class="row-border hover">
+        <thead class="table_header">
+          <tr>
+            <th class="" style="max-width: 100px;">Van_ID</th>          
+            <th class="">Van Description</th>          
+            <th class="">Reg.</th>          
+            <th class="">Tech</th>          
+            <th class="">Depot</th>          
+            <th class="">Service</th>          
+            <th class="text-center">Active?</th>          
+            <th style="width: 20%" class="">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of Van_list; index as i">
+              <td class="" style="max-width: 100px;">{{ row['van_id'] }}</td>
+              <td class="">{{ row['description'] }}</td>
+              <td class="">{{ row['reg'] }}</td>
+              <td class="">{{ row['tech_id'] }}</td>
+              <td class="">{{ row['depot_id'] }}</td>
+              <td class="">{{ row['service_id'] }}</td>
+              <td class="text-center">
+                <button *ngIf="row['active']" class="btn btn-primary mb-0" disabled>Y</button>
+                <button *ngIf="!row['active']" class="btn btn-warning mb-0" disabled>N</button>
+                <!-- {{ row['active'] }}                -->
+              </td>
+              <td class="">
+                <button class="btn btn-info mr-1 mb-0 mt-1" (click)="edit(i)" >Edit</button>
+                <button class="btn btn-danger mb-0 mt-1" (click)="delete(i)" >Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="Van_list?.length == 0">
+              <td colspan="3" class="no-data-available">No data!</td>
+            </tr> 
+        </tbody>
+      </table>
+    </div> 
+    
+  </div>
+  
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Add Van</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <label for="name">Van_ID:</label>
+          <input type="text" (keyup)="checkId(add_name['van_id'])" [(ngModel)]="add_name['van_id']" #addId="ngModel" required>
+          <div *ngIf="addId.invalid && (addId.dirty || addId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="addId.invalid">
+                  Van_ID is required.
+              </div>
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Van Description:</label>
+          <input type="text" [(ngModel)]="add_name['description']" #addDesc="ngModel" required>
+          <div *ngIf="addDesc.invalid && (addDesc.dirty || addDesc.touched)"
+              class="alert alert-danger">
+              <div *ngIf="addDesc.invalid">
+                  Van Description is required.
+              </div>
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Reg:</label>
+          <input type="text" [(ngModel)]="add_name['reg']" #addReg="ngModel" required>
+          <div *ngIf="addReg.invalid && (addReg.dirty || addReg.touched)"
+              class="alert alert-danger">
+              <div *ngIf="addReg.invalid">
+                  Reg is required.
+              </div>
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Tech</label>
+          <select class="form-control pr-4" [(ngModel)] = "add_name['tech_id']" #addTech="ngModel" required>
+            <option *ngFor="let tech of tech_list"  [value]="tech['tech_id']">{{tech['tech_id']}}</option>
+          </select>
+          <div *ngIf="addTech.invalid && (addTech.dirty || addTech.touched)"
+              class="alert alert-danger mt-3">
+              <div *ngIf="addTech.invalid">
+                  Tech is required.
+              </div>
+          </div>
+          <!-- <input type="number" [(ngModel)]="add_name['service']"> -->
+      </div>
+      <div class="form-group clearfix">
+          <label for="name">Active:</label>
+          <button *ngIf="add_name['active'] == false" (click)="add_name['active'] = !add_name['active']" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="add_name['active'] == true" (click)="add_name['active'] = !add_name['active']" class="btn btn-primary mb-0 ml-3">Y</button>
+          <button class="btn btn-primary float-right mb-0" (click)="open_sub_add()" >Add_Item</button>
+      </div>
+
+      <table class="row-border hover">
+        <thead class="table_header">
+          <tr>
+            <th style="width: 30%;">Kit_ID</th>
+            <th>Kit_Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of this.add_name.sub_kits; index as idx;" >
+            <td>
+              <input *ngIf="editing_no != idx"  type="text" class="mb-0" [value]="item['kit_id']" readonly>
+              <select *ngIf="editing_no == idx" [(ngModel)]="item['kit_id']" (change)="select_item_add(item['kit_id'])">
+                <option *ngFor="let _item of kit_list_sub" [value]="_item['kit_id']">{{_item['kit_id']}}</option>
+              </select>
+            </td>
+            <td><input type="text" class="mb-0" [value]="item['kit_name']"></td>
+            <td><button type="button" class="btn btn-danger mb-0" (click)="remove_item_add(idx)" >Delete</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="add()" [disabled]="addId.invalid || id_exits || addDesc.invalid || addReg.invalid || addTech.invalid">Add</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  
+  <ng-template #content_edit let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Van</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <label for="name">Van_ID:</label>
+          <input type="text" (keyup)="edit_checkId(edit_name['van_id'])" [(ngModel)]="edit_name['van_id']" #editId="ngModel" required>
+          <div *ngIf="editId.invalid && (editId.dirty || editId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="editId.invalid">
+                  Van_ID is required.
+              </div>                        
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Van Description:</label>
+          <input type="text" [(ngModel)]="edit_name['description']" #editDesc="ngModel" required>
+          <div *ngIf="editDesc.invalid && (editDesc.dirty || editDesc.touched)"
+              class="alert alert-danger">
+              <div *ngIf="editDesc.invalid">
+                  Van Description is required.
+              </div>                        
+          </div>          
+      </div>
+      <div class="form-group">
+        <label for="name">Reg:</label>
+        <input type="text" [(ngModel)]="edit_name['reg']" #editReg="ngModel" required>
+        <div *ngIf="editReg.invalid && (editReg.dirty || editReg.touched)"
+              class="alert alert-danger">
+              <div *ngIf="editReg.invalid">
+                  Reg is required.
+              </div>                        
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Tech</label>
+          <select class="form-control pr-4" [(ngModel)] = "edit_name['tech_id']" #editTech="ngModel" required>
+            <option *ngFor="let tech of tech_list"  [value]="tech['tech_id']">{{tech['tech_id']}}</option>
+          </select>
+          <div *ngIf="editTech.invalid && (editTech.dirty || editTech.touched)"
+              class="alert alert-danger mt-3">
+              <div *ngIf="editTech.invalid">
+                  Tech is required.
+              </div>
+          </div>
+      </div>
+      <div class="form-group clearfix">
+          <label for="name">Active:</label>
+          <button *ngIf="edit_active == false" (click)="edit_active = !edit_active" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="edit_active == true" (click)="edit_active = !edit_active" class="btn btn-primary mb-0 ml-3">Y</button>
+          <button class="btn btn-primary float-right mb-0" (click)="open_sub_edit()" >Add_Item</button>
+      </div>
+
+      <table class="row-border hover">
+          <thead class="table_header">
+            <tr>
+              <th style="width: 30%;">Kit_ID</th>
+              <th>Kit_Name</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of this.edit_name.sub_kits; index as idx;" >
+              <td>
+                <input *ngIf="editing_no != idx"  type="text" class="mb-0" [value]="item['kit_id']" readonly>
+                <select *ngIf="editing_no == idx" [(ngModel)]="item['kit_id']" (change)="select_item_edit(item['kit_id'])">
+                  <option *ngFor="let _item of kit_list_sub" [value]="_item['kit_id']">{{_item['kit_id']}}</option>
+                </select>
+              </td>
+              <td><input type="text" class="mb-0" [value]="item['kit_name']"></td>
+              <td><button type="button" class="btn btn-danger mb-0" (click)="remove_item_edit(idx)" >Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+  
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="editId.invalid || editDesc.invalid || editReg.invalid || editTech.invalid">Save</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+   
+  <ng-template #content_delete let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Delete Van</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <h5>Are you sure?</h5>
+          <h3>Delete - {{delete_name['description']}}</h3>
+      </div> 
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="deleteProcess()">Delete</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  
+  

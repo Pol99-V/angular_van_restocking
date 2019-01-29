@@ -1,0 +1,256 @@
+<div class="card mt-5">
+    <div class="card-header h2">Techs</div>
+    <div class="card-body">
+      <div class="clearfix">
+        <button class="btn btn-primary float-left" (click)="openAdd()" >Add</button>
+        <input type="text" name="search" id="search" class="float-right" [(ngModel)] = "searchString" (keyup)="filter()" >
+        <button *ngIf="active == 0" (click)="activeFilter()" class="btn btn-warning float-right mr-3">N</button>
+        <button *ngIf="active == 1" (click)="activeFilter()" class="btn btn-primary float-right mr-3">Y</button>
+        <button *ngIf="active == 2" (click)="activeFilter()" class="btn btn-success float-right mr-3">A</button>
+      </div>
+      <table datatable [dtOptions]="dtOptions" class="row-border hover">
+        <thead class="table_header">
+          <tr>
+            <th class="" style="max-width: 100px;">Tech_ID</th>          
+            <th class="">Tech Name</th>          
+            <th class="">Email</th>          
+            <th class="">Van</th>          
+            <th class="">Depot</th>          
+            <th class="">Service</th>          
+            <th class="text-center">Active?</th>          
+            <th style="width: 30%" class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of Tech_list; index as i">
+              <td class="" style="max-width: 100px;">{{ row['tech_id'] }}</td>
+              <td class="">{{ row['name'] }}</td>
+              <td class="">{{ row['email'] }}</td>
+              <td class="">{{ row['van_id'] }}</td>
+              <td class="">{{ row['depot_id'] }}</td>
+              <td class="">{{ row['service_id'] }}</td>
+              <td class="text-center">
+                <button *ngIf="row['active']" class="btn btn-primary mb-0" disabled>Y</button>
+                <button *ngIf="!row['active']" class="btn btn-warning mb-0" disabled>N</button>
+                <!-- {{ row['active'] }}                -->
+              </td>
+              <td class="text-center">
+                <button class="btn btn-info mr-1 mb-0 mt-1" (click)="edit(i)" >Edit</button>
+                <button class="btn btn-danger mb-0 mt-1" (click)="delete(i)" >Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="Tech_list?.length == 0">
+              <td colspan="3" class="no-data-available">No data!</td>
+            </tr> 
+        </tbody>
+      </table>
+    </div> 
+    
+  </div>
+  
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Add Tech</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">     
+      <div class="form-group">
+          <label for="name">Tech ID:</label>
+          <input type="text" (keyup)="checkId(add_name['tech_id'])" [(ngModel)]="add_name['tech_id']" #addId="ngModel" required>
+          <div *ngIf="addId.invalid && (addId.dirty || addId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="addId.invalid">
+                  Tech ID is required.
+              </div>
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Tech Name:</label>
+          <input type="text" [(ngModel)]="add_name['name']" #addName="ngModel" required>
+          <div *ngIf="addName.invalid && (addName.dirty || addName.touched)"
+            class="alert alert-danger">
+            <div *ngIf="addName.invalid">
+              Tech Name is required.
+            </div>            
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" [(ngModel)]="add_name['email']" #addEmail="ngModel" required email>
+          <div *ngIf="addEmail.invalid && (addEmail.dirty || addEmail.touched)"
+            class="alert alert-danger">
+            <div *ngIf="addEmail.errors.required">
+              Email is required.
+            </div>   
+            <div *ngIf="addEmail.errors.email" >
+              Email not valid.
+            </div>         
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Service:</label>
+          <select class="form-control pr-4" [(ngModel)] = "add_name['service_id']" #addService="ngModel" required>
+            <option *ngFor="let service of service_list"  [value]="service['name']">{{service['name']}}</option>
+          </select>
+          <div *ngIf="addService.invalid && (addService.dirty || addService.touched)"
+            class="alert alert-danger mt-3">
+            <div *ngIf="addService.invalid">
+              Service is required.
+            </div>            
+          </div>
+          <!-- <input type="number" [(ngModel)]="add_name['service']"> -->
+      </div>
+      <div class="form-group">
+          <label for="name">Van:</label>
+          <select class="form-control pr-4" [(ngModel)] = "add_name['van_id']" name="" id="" disabled>
+            <option *ngFor="let van of van_list"  [value]="van['description']">{{van['description']}}</option>
+          </select>
+          <!-- <input type="number" [(ngModel)]="add_name['service']"> -->
+      </div>
+      <div class="form-group">
+          <label for="name">Depot:</label>
+          <select class="form-control pr-4" [(ngModel)] = "add_name['depot_id']" #addDepot="ngModel" required>
+            <option *ngFor="let depot of depot_list"  [value]="depot['description']">{{depot['description']}}</option>
+          </select>
+          <div *ngIf="addDepot.invalid && (addDepot.dirty || addDepot.touched)"
+            class="alert alert-danger mt-3">
+            <div *ngIf="addDepot.invalid">
+              Depot is required.
+            </div>            
+          </div>
+          <!-- <input type="number" [(ngModel)]="add_name['service']"> -->
+      </div>
+      <div class="form-group">
+          <label for="name">Active:</label>
+          <button *ngIf="add_name['active'] == false" (click)="add_name['active'] = !add_name['active']" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="add_name['active'] == true" (click)="add_name['active'] = !add_name['active']" class="btn btn-primary mb-0 ml-3">Y</button>
+      </div>
+      <div class="form-group">
+        <label for="">Login Detail:</label>
+        <textarea name="" id="" cols="10" rows="5" [(ngModel)]="add_name['login_detail']" ></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="add()" [disabled]="addName.invalid || addEmail.invalid || addService.invalid || addDepot.invalid || addId.invalid || id_exits">Add</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  
+  <ng-template #content_edit let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Edit Tech</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <label for="name">Tech ID:</label>
+          <input type="text" (keyup)="edit_checkId(edit_name['tech_id'])" [(ngModel)]="edit_name['tech_id']" #editId="ngModel" required>
+          <div *ngIf="editId.invalid && (editId.dirty || editId.touched)"
+              class="alert alert-danger">
+              <div *ngIf="editId.invalid">
+                  Tech ID is required.
+              </div>                        
+          </div>
+          <div *ngIf="id_exits" class="alert alert-danger" >
+              This ID already exists.
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Tech_name:</label>
+          <input type="text" [(ngModel)]="edit_name['name']" #editName="ngModel" required>
+          <div *ngIf="editName.invalid && (editName.dirty || editName.touched)"
+            class="alert alert-danger">
+            <div *ngIf="editName.invalid">
+              Tech Name is required.
+            </div>            
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Email:</label>
+          <input type="text" [(ngModel)]="edit_name['email']" #editEmail="ngModel" required email>
+          <div *ngIf="editEmail.invalid && (editEmail.dirty || editEmail.touched)"
+            class="alert alert-danger">
+            <div *ngIf="editEmail.errors.required">
+              Email is required.
+            </div>   
+            <div *ngIf="editEmail.errors.email" >
+              Email not valid.
+            </div>         
+          </div>
+      </div>
+      <div class="form-group">
+          <label for="name">Service:</label>
+          <select class="form-control pr-4" [(ngModel)] = "edit_name['service_id']" #editService="ngModel" required>
+            <option *ngFor="let service of service_list"  [value]="service['name']">{{service['name']}}</option>
+          </select>
+          <div *ngIf="editService.invalid && (editService.dirty || editService.touched)"
+            class="alert alert-danger mt-3">
+            <div *ngIf="editService.invalid">
+              Service is required.
+            </div>
+          </div>
+          <!-- <input type="number" [(ngModel)]="edit_name['cost']"> -->
+      </div>
+      <div class="form-group">
+          <label for="name">Van:</label>
+          <select class="form-control pr-4" [(ngModel)] = "edit_name['van_id']" name="" id="" disabled>
+            <option *ngFor="let van of van_list"  [value]="van['van_id']">{{van['van_id']}}</option>
+          </select>
+          <!-- <input type="number" [(ngModel)]="edit_name['cost']"> -->
+      </div>
+      <div class="form-group">
+          <label for="name">Depot:</label>
+          <select class="form-control pr-4" [(ngModel)] = "edit_name['depot_id']" #editDepot="ngModel" required>
+            <option *ngFor="let depot of depot_list"  [value]="depot['description']">{{depot['description']}}</option>
+          </select>
+          <div *ngIf="editDepot.invalid && (editDepot.dirty || editDepot.touched)"
+            class="alert alert-danger mt-3">
+            <div *ngIf="editDepot.invalid">
+              Depot is required.
+            </div>            
+          </div>
+          <!-- <input type="number" [(ngModel)]="edit_name['cost']"> -->
+      </div>
+      <div class="form-group">
+          <label for="name">Active:</label>
+          <button *ngIf="edit_active == false" (click)="edit_active = !edit_active" class="btn btn-warning mb-0 ml-3">N</button>
+          <button *ngIf="edit_active == true" (click)="edit_active = !edit_active" class="btn btn-primary mb-0 ml-3">Y</button>
+      </div>
+      <div class="form-group">
+        <label for="">Login Detail</label>
+        <textarea name="" id="" cols="10" rows="5" [(ngModel)]="edit_name['login_detail']"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="editName.invalid || editService.invalid || editEmail.invalid || editDepot.invalid || editId.invalid || id_exits">Save</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+   
+  <ng-template #content_delete let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">Delete Tech</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+          <h5>Are you sure?</h5>
+          <h3>Delete - {{delete_name['tech_id']}}</h3>
+      </div> 
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="deleteProcess()">Delete</button>
+        <button type="button" class="btn btn-outline-primary" (click)="modal.close('Close click')">Close</button>
+    </div>
+  </ng-template>
+  
